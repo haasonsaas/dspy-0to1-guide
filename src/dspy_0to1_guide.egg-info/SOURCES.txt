@@ -1,9 +1,0 @@
-README.md
-pyproject.toml
-src/dspy_0to1_guide.egg-info/PKG-INFO
-src/dspy_0to1_guide.egg-info/SOURCES.txt
-src/dspy_0to1_guide.egg-info/dependency_links.txt
-src/dspy_0to1_guide.egg-info/entry_points.txt
-src/dspy_0to1_guide.egg-info/requires.txt
-src/dspy_0to1_guide.egg-info/top_level.txt
-tests/test_basic_examples.py
