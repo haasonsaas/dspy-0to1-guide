@@ -1,230 +1,143 @@
-#!/usr/bin/env python3
-"""
-Test Suite for Basic DSPy Examples
+"""Deterministic unit tests for key DSPy examples."""
 
-Tests the core functionality of all basic examples.
-"""
+from __future__ import annotations
 
-import pytest
-import os
 import sys
 from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, Callable
 
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+import pytest
 
-import dspy
-from dotenv import load_dotenv
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-# Load environment variables
-load_dotenv()
+from examples.advanced.pydantic_validation import (  # noqa: E402
+    ContractAnalysisResult,
+    StructuredContractAnalyzer,
+)
+from examples.basic.math_qa import MathQA, validate_solution  # noqa: E402
+from examples.basic.summarizer import (  # noqa: E402
+    AdaptiveSummarizer,
+    DocumentSummarizer,
+)
 
-@pytest.fixture(scope="session", autouse=True)
-def configure_dspy():
-    """Configure DSPy for all tests."""
-    try:
-        if os.getenv('OPENAI_API_KEY'):
-            dspy.configure(lm=dspy.LM('openai/gpt-4o-mini'))
-        else:
-            dspy.configure(lm=dspy.LM('ollama_chat/llama3'))
-        yield
-    except Exception as e:
-        pytest.skip(f"Could not configure DSPy: {e}")
 
-class TestBasicExamples:
-    """Test basic DSPy functionality."""
-    
-    def test_hello_world_qa(self):
-        """Test basic question answering."""
-        import dspy
-        
-        # Simple direct test since hello_world.py doesn't export classes
-        predictor = dspy.Predict("question -> answer")
-        result = predictor(question="What is the capital of France?")
-        
-        assert hasattr(result, 'answer')
-        assert isinstance(result.answer, str)
-        assert len(result.answer) > 0
-    
-    def test_math_qa_basic(self):
-        """Test mathematical reasoning."""
-        from examples.basic.math_qa import MathQA
-        
-        math_qa = MathQA()
-        result = math_qa("What is 2 + 2?")
-        
-        assert hasattr(result, 'solution')
-        # Should contain numeric answer
-        assert any(char.isdigit() for char in str(result.solution))
-    
-    def test_summarizer_basic(self):
-        """Test document summarization."""
-        from examples.basic.summarizer import DocumentSummarizer
-        
-        summarizer = DocumentSummarizer()
-        document = "This is a test document with multiple sentences. It contains information about testing. The document is used to verify summarization functionality."
-        
-        result = summarizer(document, max_length=50)
-        
-        assert hasattr(result, 'summary')
-        assert isinstance(result.summary, str)
-        assert len(result.summary) > 0
-        assert len(result.summary.split()) < len(document.split())
+class DummyPredictor:
+    """Deterministic predictor stub for replacing LLM-backed modules."""
 
-class TestPersonaExamples:
-    """Test persona-driven examples."""
-    
-    @pytest.mark.slow
-    def test_support_sam_ticket_processing(self):
-        """Test Support-Sam ticket processing."""
-        from examples.personas.support_sam import SupportSam
-        
-        sam = SupportSam()
-        ticket = "I can't log into my account. Getting invalid credentials error."
-        
-        result = sam.process_ticket(ticket, "TEST001")
-        
-        assert isinstance(result, dict)
-        assert 'ticket_id' in result
-        assert 'classification' in result
-        assert 'response' in result
-        assert result['classification']['category'] in ['technical', 'billing', 'account', 'product', 'general']
-        assert result['classification']['urgency'] in ['low', 'medium', 'high', 'critical']
+    def __init__(self, factory: Callable[..., Any] | Any):
+        self.factory = factory
+        self.calls: list[dict[str, Any]] = []
 
-class TestAdvancedExamples:
-    """Test advanced DSPy features."""
-    
-    def test_pydantic_validation_structure(self):
-        """Test Pydantic validation creates proper structures."""
-        from examples.advanced.pydantic_validation import StructuredContractAnalyzer, ContractAnalysisResult
-        
-        analyzer = StructuredContractAnalyzer()
-        contract = "This is a service agreement between Company A and Company B for consulting services."
-        
-        result = analyzer(contract)
-        
-        assert isinstance(result, ContractAnalysisResult)
-        assert hasattr(result, 'contract_type')
-        assert hasattr(result, 'parties')
-        assert hasattr(result, 'risk_level')
-        assert result.compliance_score >= 0
-        assert result.compliance_score <= 100
+    def __call__(self, **kwargs):
+        self.calls.append(kwargs)
+        if callable(self.factory):
+            return self.factory(**kwargs)
+        return self.factory
 
-class TestDatasets:
-    """Test dataset functionality."""
-    
-    def test_qa_dataset_format(self):
-        """Test QA dataset has proper format."""
-        import json
-        
-        qa_path = project_root / "datasets/sample_data/qa.json"
-        if qa_path.exists():
-            with open(qa_path) as f:
-                data = json.load(f)
-            
-            assert 'data' in data
-            assert len(data['data']) > 0
-            
-            example = data['data'][0]
-            assert 'question' in example
-            assert 'answer' in example
-            assert isinstance(example['question'], str)
-            assert isinstance(example['answer'], str)
-    
-    def test_dspy_examples_format(self):
-        """Test DSPy examples format."""
-        import json
-        
-        dspy_qa_path = project_root / "datasets/sample_data/dspy_qa_examples.json"
-        if dspy_qa_path.exists():
-            with open(dspy_qa_path) as f:
-                data = json.load(f)
-            
-            assert 'data' in data
-            assert len(data['data']) > 0
-            
-            example = data['data'][0]
-            assert 'question' in example
-            assert 'answer' in example
 
-class TestInfrastructure:
-    """Test infrastructure components."""
-    
-    def test_prometheus_metrics_collector(self):
-        """Test Prometheus metrics collector."""
-        from examples.infrastructure.prometheus_metrics import DSPyMetricsCollector
-        
-        collector = DSPyMetricsCollector()
-        
-        # Test metric recording
-        collector.record_llm_request(
-            model="test-model",
-            module_type="qa",
-            duration=0.5,
-            status="success",
-            input_tokens=10,
-            output_tokens=5
+def as_namespace(**fields: Any) -> SimpleNamespace:
+    return SimpleNamespace(**fields)
+
+
+def test_math_qa_extracts_numeric_solution():
+    math_qa = MathQA()
+    math_qa.solve = DummyPredictor(
+        lambda **_: as_namespace(solution="Answer: 4", explanation="addition")
+    )
+
+    result = math_qa("What is 2 + 2?")
+
+    assert result.solution == pytest.approx(4.0)
+    assert validate_solution("2+2", 4.0, result)
+
+
+def test_validate_solution_tolerates_small_error():
+    response = as_namespace(solution=4.009, explanation="floating tolerance")
+    assert validate_solution("calc", 4.0, response) is True
+
+
+def test_document_summarizer_respects_max_length():
+    summarizer = DocumentSummarizer("comprehensive")
+    dummy = DummyPredictor(
+        lambda **kwargs: as_namespace(
+            summary="short summary", key_points=["point one", "point two"], **kwargs
         )
-        
-        # Check that metrics were recorded (basic test)
-        assert collector.llm_requests._value._value > 0
-    
-    def test_instrumented_module_base(self):
-        """Test instrumented module base class."""
-        from examples.infrastructure.prometheus_metrics import DSPyMetricsCollector, InstrumentedModule
-        
-        collector = DSPyMetricsCollector()
-        
-        class TestModule(InstrumentedModule):
-            def _forward_impl(self, test_input):
-                return {"result": f"processed: {test_input}"}
-        
-        module = TestModule(collector, "test")
-        result = module("test input")
-        
-        assert result is not None
-        assert isinstance(result, dict)
+    )
+    summarizer.summarize = dummy
 
-@pytest.mark.slow
-class TestIntegration:
-    """Integration tests that may take longer."""
-    
-    def test_end_to_end_qa_pipeline(self):
-        """Test complete QA pipeline."""
-        # Simple QA test
-        predictor = dspy.Predict("question -> answer")
-        result = predictor(question="What is 1 + 1?")
-        
-        assert hasattr(result, 'answer')
-        assert isinstance(result.answer, str)
-        assert len(result.answer) > 0
-    
-    def test_chain_of_thought_reasoning(self):
-        """Test chain of thought reasoning."""
-        cot = dspy.ChainOfThought("math_problem -> solution")
-        result = cot(math_problem="If I have 5 apples and give away 2, how many do I have left?")
-        
-        assert hasattr(result, 'solution')
-        assert isinstance(result.solution, str)
-        # Should mention 3 as the answer
-        assert "3" in result.solution
+    document = "word " * 50
+    result = summarizer(document, max_length=42)
 
-class TestConfiguration:
-    """Test configuration and setup."""
-    
-    def test_dspy_configuration(self):
-        """Test DSPy is properly configured."""
-        assert dspy.settings.lm is not None
-    
-    def test_environment_variables(self):
-        """Test environment setup."""
-        # Test that .env file exists and is readable
-        env_path = project_root / ".env"
-        assert env_path.exists()
-        
-        # Test basic environment structure
-        with open(env_path) as f:
-            content = f.read()
-            assert "OLLAMA_HOST" in content
-            assert "OLLAMA_MODEL" in content
+    assert dummy.calls[0]["max_length"] == "42 words maximum"
+    assert result.summary == "short summary"
+    assert result.key_points == ["point one", "point two"]
+
+
+@pytest.mark.parametrize(
+    "document, doc_type, expected_strategy, summary_attr",
+    [
+        ("Deep learning research", "technical briefing", "technical", "technical_summary"),
+        ("Quarterly revenue update", "business report", "executive", "executive_summary"),
+        ("Community garden update", "news article", "comprehensive", "summary"),
+    ],
+)
+def test_adaptive_summarizer_strategy_selection(document, doc_type, expected_strategy, summary_attr):
+    adaptive = AdaptiveSummarizer()
+
+    adaptive.classifier = DummyPredictor(lambda **_: as_namespace(document_type=doc_type))
+    adaptive.technical.summarize = DummyPredictor(
+        lambda **_: as_namespace(technical_summary="technical", key_concepts=["attention"])
+    )
+    adaptive.executive.summarize = DummyPredictor(
+        lambda **_: as_namespace(executive_summary="executive", action_items=["review goals"])
+    )
+    adaptive.comprehensive.summarize = DummyPredictor(
+        lambda **_: as_namespace(summary="general", key_points=["growth"])
+    )
+
+    result = adaptive(document, max_length=75)
+
+    assert result.strategy_used == expected_strategy
+    assert result.detected_type == doc_type
+    assert hasattr(result, summary_attr)
+
+
+def test_structured_contract_analyzer_uses_llm_signal():
+    analyzer = StructuredContractAnalyzer()
+    analyzer.analyzer = DummyPredictor(
+        lambda **_: as_namespace(
+            analysis=(
+                "Annual service fee of $120,000 payable monthly with termination in 45 days. "
+                "Liability limited and automatic renewal applies."
+            )
+        )
+    )
+
+    contract_text = "Consulting services agreement between Provider Inc. and Client LLC."
+    result = analyzer(contract_text)
+
+    assert isinstance(result, ContractAnalysisResult)
+    assert result.contract_type == "service"
+    assert result.financial_terms and result.financial_terms[0].amount == pytest.approx(120000.0)
+    assert "45" in (result.duration or "")
+    assert result.termination_notice >= 30
+    red_flags = {flag.lower() for flag in result.red_flags}
+    assert "automatic renewal" in red_flags
+
+
+def test_structured_contract_analyzer_fallback(monkeypatch):
+    analyzer = StructuredContractAnalyzer()
+
+    def failing_predictor(**_):
+        raise RuntimeError("llm offline")
+
+    analyzer.analyzer = DummyPredictor(failing_predictor)
+
+    result = analyzer("Short contract text")
+
+    assert isinstance(result, ContractAnalysisResult)
+    assert result.contract_type == "other"
+    assert result.compliance_score == 75

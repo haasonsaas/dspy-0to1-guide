@@ -20,7 +20,8 @@ sys.path.insert(0, str(project_root))
 
 from dotenv import load_dotenv
 import dspy
-from dspy import Example, Evaluate, metrics
+from dspy import Example
+from dspy.evaluate import Evaluate, metrics
 
 # Load environment variables
 load_dotenv()
