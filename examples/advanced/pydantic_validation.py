@@ -47,9 +47,9 @@ class ContractAnalysisResult(BaseModel):
         Field(..., description="Type of contract")
     )
     parties: List[ContactInfo] = Field(
-        ..., min_items=2, description="Contracting parties"
+        ..., min_length=2, description="Contracting parties"
     )
-    key_terms: List[str] = Field(..., min_items=1, description="Key contractual terms")
+    key_terms: List[str] = Field(..., min_length=1, description="Key contractual terms")
     financial_terms: List[FinancialTerm] = Field(
         default=[], description="Financial obligations"
     )
