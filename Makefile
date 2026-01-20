@@ -35,7 +35,11 @@ format: ## Format code with black and isort
 	isort src/ examples/ tests/
 
 type-check: ## Run type checking with mypy
-	mypy src/
+	@if find src -type f -name "*.py" -print -quit | grep -q .; then \
+		mypy src/; \
+	else \
+		echo "No Python source files in src/; skipping mypy."; \
+	fi
 
 # Testing
 test: ## Run all tests

@@ -1,0 +1,5 @@
+[flake8]
+max-line-length = 88
+extend-ignore = E203,W503
+per-file-ignores =
+    examples/*/*.py: E501,W291,W293,F401,F841,F541,E722,F821

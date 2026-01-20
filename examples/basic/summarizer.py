@@ -10,20 +10,22 @@ Demonstrates:
 """
 
 import os
+from typing import Optional
+
 import dspy
 from dotenv import load_dotenv
-from typing import Optional
 
 # Load environment variables
 load_dotenv()
 
+
 class DocumentSummarizer(dspy.Module):
     """Flexible document summarization module."""
-    
+
     def __init__(self, strategy: str = "comprehensive"):
         super().__init__()
         self.strategy = strategy
-        
+
         if strategy == "comprehensive":
             self.summarize = dspy.ChainOfThought(
                 "document, max_length -> summary, key_points"
@@ -38,42 +40,49 @@ class DocumentSummarizer(dspy.Module):
             )
         else:
             self.summarize = dspy.ChainOfThought("document, max_length -> summary")
-    
+
     def forward(self, document: str, max_length: int = 200):
         """Summarize a document with specified maximum length."""
         return self.summarize(
-            document=document,
-            max_length=f"{max_length} words maximum"
+            document=document, max_length=f"{max_length} words maximum"
         )
+
 
 class AdaptiveSummarizer(dspy.Module):
     """Adaptive summarizer that chooses strategy based on document type."""
-    
+
     def __init__(self):
         super().__init__()
         self.classifier = dspy.Predict("document -> document_type")
         self.comprehensive = DocumentSummarizer("comprehensive")
         self.executive = DocumentSummarizer("executive")
         self.technical = DocumentSummarizer("technical")
-    
+
     def forward(self, document: str, max_length: int = 200):
         """Classify document type and use appropriate summarization strategy."""
         # First, classify the document
         doc_type = self.classifier(document=document[:500])  # Use first 500 chars
-        
+
         # Choose appropriate summarizer
-        if "technical" in doc_type.document_type.lower() or "research" in doc_type.document_type.lower():
+        if (
+            "technical" in doc_type.document_type.lower()
+            or "research" in doc_type.document_type.lower()
+        ):
             result = self.technical(document, max_length)
             result.strategy_used = "technical"
-        elif "business" in doc_type.document_type.lower() or "report" in doc_type.document_type.lower():
+        elif (
+            "business" in doc_type.document_type.lower()
+            or "report" in doc_type.document_type.lower()
+        ):
             result = self.executive(document, max_length)
             result.strategy_used = "executive"
         else:
             result = self.comprehensive(document, max_length)
             result.strategy_used = "comprehensive"
-        
+
         result.detected_type = doc_type.document_type
         return result
+
 
 def get_sample_documents():
     """Get sample documents for testing."""
@@ -96,7 +105,6 @@ def get_sample_documents():
         more interpretable AI systems. Techniques like model pruning, quantization, and knowledge distillation 
         are being explored to make AI more accessible and sustainable.
         """,
-        
         "business_report": """
         Q3 2024 Financial Results and Strategic Update
         
@@ -118,7 +126,6 @@ def get_sample_documents():
         Challenges include increased competition in the cloud market and regulatory changes in key international 
         markets. We are proactively addressing these through enhanced product differentiation and compliance initiatives.
         """,
-        
         "news_article": """
         Local Community Garden Initiative Shows Remarkable Success
         
@@ -140,7 +147,6 @@ def get_sample_documents():
         additional funding for urban agriculture initiatives. Plans for expansion include a tool library, 
         rainwater harvesting system, and solar-powered irrigation.
         """,
-        
         "research_paper": """
         Abstract: This study investigates the effects of microplastic pollution on marine ecosystem biodiversity 
         in coastal environments. Using a combination of field sampling, laboratory analysis, and statistical 
@@ -164,108 +170,133 @@ def get_sample_documents():
         
         Conclusion: Immediate action is required to address microplastic pollution sources and implement 
         conservation strategies for affected marine habitats.
-        """
+        """,
     }
+
 
 def evaluate_summary_quality(original: str, summary: str) -> dict:
     """Simple heuristic evaluation of summary quality."""
     original_words = len(original.split())
     summary_words = len(summary.split())
     compression_ratio = summary_words / original_words
-    
+
     # Check for key information retention (very basic)
     original_lower = original.lower()
     summary_lower = summary.lower()
-    
+
     # Count important terms that appear in both
-    important_indicators = ['percent', '%', 'million', 'billion', 'research', 'study', 'results', 'growth']
-    retained_terms = sum(1 for term in important_indicators if term in original_lower and term in summary_lower)
-    
+    important_indicators = [
+        "percent",
+        "%",
+        "million",
+        "billion",
+        "research",
+        "study",
+        "results",
+        "growth",
+    ]
+    retained_terms = sum(
+        1
+        for term in important_indicators
+        if term in original_lower and term in summary_lower
+    )
+
     return {
         "compression_ratio": compression_ratio,
         "original_words": original_words,
         "summary_words": summary_words,
         "retained_key_terms": retained_terms,
-        "quality_score": min(1.0, (retained_terms / max(1, len([t for t in important_indicators if t in original_lower]))) * 2)
+        "quality_score": min(
+            1.0,
+            (
+                retained_terms
+                / max(1, len([t for t in important_indicators if t in original_lower]))
+            )
+            * 2,
+        ),
     }
+
 
 def main():
     """Run document summarization examples."""
     print("📄 DSPy Document Summarization")
     print("=" * 50)
-    
+
     # Configure model
     try:
-        if os.getenv('OPENAI_API_KEY'):
-            dspy.configure(lm=dspy.LM('openai/gpt-4o-mini'))
+        if os.getenv("OPENAI_API_KEY"):
+            dspy.configure(lm=dspy.LM("openai/gpt-4o-mini"))
             print("✅ Using OpenAI GPT-4o-mini")
         else:
-            dspy.configure(lm=dspy.LM('ollama_chat/llama3'))
+            dspy.configure(lm=dspy.LM("ollama_chat/llama3"))
             print("✅ Using Ollama Llama3")
     except Exception as e:
         print(f"❌ Model configuration failed: {e}")
         return
-    
+
     # Get sample documents
     documents = get_sample_documents()
-    
+
     # Test different summarization approaches
     print("\n🔍 Testing Different Summarization Strategies:")
     print("-" * 50)
-    
+
     # Create summarizers
     comprehensive_summarizer = DocumentSummarizer("comprehensive")
     executive_summarizer = DocumentSummarizer("executive")
     adaptive_summarizer = AdaptiveSummarizer()
-    
+
     for doc_name, document in documents.items():
         print(f"\n📑 Document: {doc_name.replace('_', ' ').title()}")
         print(f"   Original length: {len(document.split())} words")
-        
+
         try:
             # Test comprehensive summarization
             print("\n   🔹 Comprehensive Summary:")
             comp_result = comprehensive_summarizer(document, max_length=100)
-            if hasattr(comp_result, 'summary'):
+            if hasattr(comp_result, "summary"):
                 print(f"      Summary: {comp_result.summary}")
-                if hasattr(comp_result, 'key_points'):
+                if hasattr(comp_result, "key_points"):
                     print(f"      Key Points: {comp_result.key_points}")
-            
+
             # Test adaptive summarization
             print("\n   🔹 Adaptive Summary:")
             adaptive_result = adaptive_summarizer(document, max_length=100)
-            
-            if hasattr(adaptive_result, 'detected_type'):
+
+            if hasattr(adaptive_result, "detected_type"):
                 print(f"      Detected Type: {adaptive_result.detected_type}")
-            if hasattr(adaptive_result, 'strategy_used'):
+            if hasattr(adaptive_result, "strategy_used"):
                 print(f"      Strategy Used: {adaptive_result.strategy_used}")
-            
+
             # Display appropriate summary based on strategy
-            if hasattr(adaptive_result, 'executive_summary'):
+            if hasattr(adaptive_result, "executive_summary"):
                 print(f"      Executive Summary: {adaptive_result.executive_summary}")
-            elif hasattr(adaptive_result, 'technical_summary'):
+            elif hasattr(adaptive_result, "technical_summary"):
                 print(f"      Technical Summary: {adaptive_result.technical_summary}")
-            elif hasattr(adaptive_result, 'summary'):
+            elif hasattr(adaptive_result, "summary"):
                 print(f"      Summary: {adaptive_result.summary}")
-            
+
             # Evaluate quality
-            if hasattr(comp_result, 'summary'):
+            if hasattr(comp_result, "summary"):
                 quality = evaluate_summary_quality(document, comp_result.summary)
                 print(f"      Quality Score: {quality['quality_score']:.2f}")
                 print(f"      Compression: {quality['compression_ratio']:.1%}")
-                
+
         except Exception as e:
             print(f"   ❌ Error processing {doc_name}: {e}")
-    
+
     print("\n🎯 Summary Analysis:")
     print("   ✅ Different strategies adapt to document types")
     print("   ✅ Flexible length control")
     print("   ✅ Key information extraction")
-    
+
     print("\n🚀 Next Steps:")
-    print("   - Try optimization: python examples/advanced/summarization_optimization.py")
+    print(
+        "   - Try optimization: python examples/advanced/summarization_optimization.py"
+    )
     print("   - Explore evaluation: python examples/evaluation/summary_metrics.py")
     print("   - Check personas: python examples/personas/legal_lucy.py")
+
 
 if __name__ == "__main__":
     main()

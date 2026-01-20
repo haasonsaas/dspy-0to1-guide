@@ -63,7 +63,9 @@ def test_document_summarizer_respects_max_length():
     summarizer = DocumentSummarizer("comprehensive")
     dummy = DummyPredictor(
         lambda **kwargs: as_namespace(
-            summary="short summary", key_points=["point one", "point two"], **kwargs
+            summary="short summary",
+            key_points=["point one", "point two"],
+            **kwargs,
         )
     )
     summarizer.summarize = dummy
@@ -79,20 +81,43 @@ def test_document_summarizer_respects_max_length():
 @pytest.mark.parametrize(
     "document, doc_type, expected_strategy, summary_attr",
     [
-        ("Deep learning research", "technical briefing", "technical", "technical_summary"),
-        ("Quarterly revenue update", "business report", "executive", "executive_summary"),
-        ("Community garden update", "news article", "comprehensive", "summary"),
+        (
+            "Deep learning research",
+            "technical briefing",
+            "technical",
+            "technical_summary",
+        ),
+        (
+            "Quarterly revenue update",
+            "business report",
+            "executive",
+            "executive_summary",
+        ),
+        (
+            "Community garden update",
+            "news article",
+            "comprehensive",
+            "summary",
+        ),
     ],
 )
-def test_adaptive_summarizer_strategy_selection(document, doc_type, expected_strategy, summary_attr):
+def test_adaptive_summarizer_strategy_selection(
+    document, doc_type, expected_strategy, summary_attr
+):
     adaptive = AdaptiveSummarizer()
 
-    adaptive.classifier = DummyPredictor(lambda **_: as_namespace(document_type=doc_type))
+    adaptive.classifier = DummyPredictor(
+        lambda **_: as_namespace(document_type=doc_type)
+    )
     adaptive.technical.summarize = DummyPredictor(
-        lambda **_: as_namespace(technical_summary="technical", key_concepts=["attention"])
+        lambda **_: as_namespace(
+            technical_summary="technical", key_concepts=["attention"]
+        )
     )
     adaptive.executive.summarize = DummyPredictor(
-        lambda **_: as_namespace(executive_summary="executive", action_items=["review goals"])
+        lambda **_: as_namespace(
+            executive_summary="executive", action_items=["review goals"]
+        )
     )
     adaptive.comprehensive.summarize = DummyPredictor(
         lambda **_: as_namespace(summary="general", key_points=["growth"])
@@ -110,18 +135,23 @@ def test_structured_contract_analyzer_uses_llm_signal():
     analyzer.analyzer = DummyPredictor(
         lambda **_: as_namespace(
             analysis=(
-                "Annual service fee of $120,000 payable monthly with termination in 45 days. "
-                "Liability limited and automatic renewal applies."
+                "Annual service fee of $120,000 payable monthly with "
+                "termination in 45 days. Liability limited and automatic "
+                "renewal applies."
             )
         )
     )
 
-    contract_text = "Consulting services agreement between Provider Inc. and Client LLC."
+    contract_text = (
+        "Consulting services agreement between Provider Inc. and Client LLC."
+    )
     result = analyzer(contract_text)
 
     assert isinstance(result, ContractAnalysisResult)
     assert result.contract_type == "service"
-    assert result.financial_terms and result.financial_terms[0].amount == pytest.approx(120000.0)
+    assert result.financial_terms and result.financial_terms[0].amount == pytest.approx(
+        120000.0
+    )
     assert "45" in (result.duration or "")
     assert result.termination_notice >= 30
     red_flags = {flag.lower() for flag in result.red_flags}

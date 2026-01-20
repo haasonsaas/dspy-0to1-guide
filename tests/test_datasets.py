@@ -32,7 +32,9 @@ def test_json_datasets_have_metadata_and_counts(path: Path):
     assert "data" in payload, f"missing data section in {path.name}"
 
     metadata = payload["metadata"]
-    assert "description" in metadata and metadata["description"], "description should not be empty"
+    assert (
+        "description" in metadata and metadata["description"]
+    ), "description should not be empty"
 
     data_section = payload["data"]
     if isinstance(data_section, list):
@@ -60,7 +62,10 @@ def test_jsonl_records_match_expected_schema(path: Path):
         assert required.issubset(row.keys()), f"missing keys in {path.name}: {row}"
 
 
-@pytest.mark.parametrize("dataset", ["qa", "math", "sentiment", "classification", "summarization"])
+@pytest.mark.parametrize(
+    "dataset",
+    ["qa", "math", "sentiment", "classification", "summarization"],
+)
 def test_train_test_split_counts_match_metadata(dataset: str):
     train_path = DATASETS_DIR / f"{dataset}_train.json"
     test_path = DATASETS_DIR / f"{dataset}_test.json"
