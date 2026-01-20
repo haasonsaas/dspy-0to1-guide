@@ -13,11 +13,10 @@ This persona demonstrates:
 import json
 import os
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import dspy
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
 
 # Load environment variables
 load_dotenv()
@@ -234,107 +233,100 @@ def get_sample_legal_documents():
     return [
         {
             "name": "Software License Agreement",
-            "content": """
-            SOFTWARE LICENSE AGREEMENT
-            
-            This Software License Agreement ("Agreement") is entered into on [DATE] between 
-            TechCorp Inc., a Delaware corporation ("Licensor") and [CLIENT NAME] ("Licensee").
-            
-            1. GRANT OF LICENSE
-            Subject to the terms and conditions of this Agreement, Licensor hereby grants to 
-            Licensee a non-exclusive, non-transferable license to use the licensed software.
-            
-            2. PAYMENT TERMS
-            Licensee agrees to pay annual license fees of $50,000 within 30 days of invoice date.
-            Late payments will incur a 2% monthly penalty. All fees are non-refundable.
-            
-            3. TERMINATION
-            This Agreement may be terminated by either party with 90 days written notice.
-            Upon termination, Licensee must immediately cease use and return all software copies.
-            
-            4. LIABILITY AND INDEMNIFICATION
-            LICENSOR'S LIABILITY IS LIMITED TO THE AMOUNT PAID UNDER THIS AGREEMENT.
-            Licensee agrees to indemnify and hold harmless Licensor from all claims arising
-            from Licensee's use of the software.
-            
-            5. CONFIDENTIALITY
-            Both parties agree to maintain confidentiality of proprietary information for 5 years.
-            
-            6. GOVERNING LAW
-            This Agreement is governed by Delaware state law. Disputes will be resolved through
-            binding arbitration in Delaware.
-            """,
+            "content": (
+                "SOFTWARE LICENSE AGREEMENT\n\n"
+                'This Software License Agreement ("Agreement") is entered into '
+                "on [DATE] between TechCorp Inc., a Delaware corporation "
+                '("Licensor") and [CLIENT NAME] ("Licensee").\n\n'
+                "1. GRANT OF LICENSE\n"
+                "Subject to the terms and conditions of this Agreement, Licensor "
+                "hereby grants to Licensee a non-exclusive, non-transferable "
+                "license to use the licensed software.\n\n"
+                "2. PAYMENT TERMS\n"
+                "Licensee agrees to pay annual license fees of $50,000 within 30 "
+                "days of invoice date. Late payments will incur a 2% monthly "
+                "penalty. All fees are non-refundable.\n\n"
+                "3. TERMINATION\n"
+                "This Agreement may be terminated by either party with 90 days "
+                "written notice. Upon termination, Licensee must immediately "
+                "cease use and return all software copies.\n\n"
+                "4. LIABILITY AND INDEMNIFICATION\n"
+                "LICENSOR'S LIABILITY IS LIMITED TO THE AMOUNT PAID UNDER THIS "
+                "AGREEMENT. Licensee agrees to indemnify and hold harmless "
+                "Licensor from all claims arising from Licensee's use of the "
+                "software.\n\n"
+                "5. CONFIDENTIALITY\n"
+                "Both parties agree to maintain confidentiality of proprietary "
+                "information for 5 years.\n\n"
+                "6. GOVERNING LAW\n"
+                "This Agreement is governed by Delaware state law. Disputes will "
+                "be resolved through binding arbitration in Delaware."
+            ),
             "context": "Enterprise software licensing for internal business use",
             "focus": "payment terms and liability",
         },
         {
             "name": "Service Provider Agreement",
-            "content": """
-            PROFESSIONAL SERVICES AGREEMENT
-            
-            This Professional Services Agreement is between ServicePro LLC ("Provider") and
-            Client Corporation ("Client") for consulting services.
-            
-            1. SCOPE OF SERVICES
-            Provider will deliver business consulting services including strategy development,
-            process optimization, and implementation support as detailed in Exhibit A.
-            
-            2. COMPENSATION
-            Client will pay $200 per hour for consulting services. Monthly invoices due within
-            15 days. Provider may increase rates with 60 days notice.
-            
-            3. INTELLECTUAL PROPERTY
-            All work product and deliverables become the exclusive property of Client.
-            Provider retains rights to general methodologies and pre-existing IP.
-            
-            4. NON-COMPETE AND NON-SOLICITATION
-            Provider agrees not to provide similar services to Client's direct competitors
-            for 12 months after agreement termination. Provider will not solicit Client
-            employees for 18 months.
-            
-            5. LIMITATION OF LIABILITY
-            Provider's liability is limited to the fees paid in the 12 months preceding
-            the claim. Provider is not liable for consequential or punitive damages.
-            
-            6. DATA PROTECTION
-            Provider will implement reasonable security measures to protect Client data.
-            Provider may not transfer data outside the US without written consent.
-            """,
+            "content": (
+                "PROFESSIONAL SERVICES AGREEMENT\n\n"
+                "This Professional Services Agreement is between ServicePro LLC "
+                '("Provider") and Client Corporation ("Client") for consulting '
+                "services.\n\n"
+                "1. SCOPE OF SERVICES\n"
+                "Provider will deliver business consulting services including "
+                "strategy development, process optimization, and implementation "
+                "support as detailed in Exhibit A.\n\n"
+                "2. COMPENSATION\n"
+                "Client will pay $200 per hour for consulting services. Monthly "
+                "invoices due within 15 days. Provider may increase rates with 60 "
+                "days notice.\n\n"
+                "3. INTELLECTUAL PROPERTY\n"
+                "All work product and deliverables become the exclusive property "
+                "of Client. Provider retains rights to general methodologies and "
+                "pre-existing IP.\n\n"
+                "4. NON-COMPETE AND NON-SOLICITATION\n"
+                "Provider agrees not to provide similar services to Client's "
+                "direct competitors for 12 months after agreement termination. "
+                "Provider will not solicit Client employees for 18 months.\n\n"
+                "5. LIMITATION OF LIABILITY\n"
+                "Provider's liability is limited to the fees paid in the 12 "
+                "months preceding the claim. Provider is not liable for "
+                "consequential or punitive damages.\n\n"
+                "6. DATA PROTECTION\n"
+                "Provider will implement reasonable security measures to protect "
+                "Client data. Provider may not transfer data outside the US "
+                "without written consent."
+            ),
             "context": "Professional consulting services for business transformation",
             "focus": "IP rights and non-compete clauses",
         },
         {
             "name": "Vendor Agreement",
-            "content": """
-            VENDOR SUPPLY AGREEMENT
-            
-            This Supply Agreement is between Manufacturing Corp ("Buyer") and SupplyCo ("Vendor")
-            for the supply of industrial components.
-            
-            1. SUPPLY OBLIGATIONS
-            Vendor agrees to supply components according to specifications in Schedule A.
-            Minimum order quantities apply. Vendor guarantees 99% on-time delivery.
-            
-            2. PRICING AND PAYMENT
-            Prices are fixed for 24 months. Payment terms are Net 45 days.
-            Volume discounts apply for orders exceeding $100,000 quarterly.
-            
-            3. QUALITY ASSURANCE
-            All components must meet ISO 9001 standards. Defective products will be
-            replaced at Vendor's expense within 48 hours.
-            
-            4. FORCE MAJEURE
-            Neither party is liable for delays due to acts of God, government actions,
-            or other circumstances beyond reasonable control.
-            
-            5. TERMINATION
-            Agreement may be terminated for cause with 30 days notice or without cause
-            with 180 days notice. Buyer may terminate immediately for quality failures.
-            
-            6. DISPUTE RESOLUTION
-            All disputes will be resolved through mediation, then binding arbitration
-            under AAA Commercial Rules.
-            """,
+            "content": (
+                "VENDOR SUPPLY AGREEMENT\n\n"
+                'This Supply Agreement is between Manufacturing Corp ("Buyer") '
+                'and SupplyCo ("Vendor") for the supply of industrial components.\n\n'
+                "1. SUPPLY OBLIGATIONS\n"
+                "Vendor agrees to supply components according to specifications in "
+                "Schedule A. Minimum order quantities apply. Vendor guarantees 99% "
+                "on-time delivery.\n\n"
+                "2. PRICING AND PAYMENT\n"
+                "Prices are fixed for 24 months. Payment terms are Net 45 days. "
+                "Volume discounts apply for orders exceeding $100,000 quarterly.\n\n"
+                "3. QUALITY ASSURANCE\n"
+                "All components must meet ISO 9001 standards. Defective products "
+                "will be replaced at Vendor's expense within 48 hours.\n\n"
+                "4. FORCE MAJEURE\n"
+                "Neither party is liable for delays due to acts of God, government "
+                "actions, or other circumstances beyond reasonable control.\n\n"
+                "5. TERMINATION\n"
+                "Agreement may be terminated for cause with 30 days notice or "
+                "without cause with 180 days notice. Buyer may terminate "
+                "immediately for quality failures.\n\n"
+                "6. DISPUTE RESOLUTION\n"
+                "All disputes will be resolved through mediation, then binding "
+                "arbitration under AAA Commercial Rules."
+            ),
             "context": "Manufacturing supply chain partnership",
             "focus": "quality assurance and termination rights",
         },
@@ -376,7 +368,8 @@ def main():
     for i, result in enumerate(results, 1):
         if "error" in result:
             print(
-                f"\n❌ Document {i}: {result['document_name']} - Error: {result['error']}"
+                f"\n❌ Document {i}: {result['document_name']} - Error: "
+                f"{result['error']}"
             )
             continue
 
@@ -389,30 +382,30 @@ def main():
         print(f"\n📋 Document {i}: {doc_name}")
 
         # Document analysis
-        print(f"   📑 Analysis:")
+        print("   📑 Analysis:")
         print(f"      Type: {analysis['document_type']}")
         print(f"      Parties: {analysis['parties_involved'][:100]}...")
 
         # Risk assessment
-        print(f"   ⚠️  Risk Assessment:")
+        print("   ⚠️  Risk Assessment:")
         print(f"      Level: {risks['risk_level'].upper()}")
         print(f"      Primary Risks: {risks['primary_risks'][:100]}...")
         if risks["red_flags"]:
             print(f"      🚨 Red Flags: {risks['red_flags'][:100]}...")
 
         # Executive summary
-        print(f"   📊 Executive Summary:")
+        print("   📊 Executive Summary:")
         print(f"      {summary['executive_summary'][:150]}...")
 
         # Compliance
-        print(f"   ✅ Compliance:")
+        print("   ✅ Compliance:")
         print(f"      Status: {compliance['status']}")
         try:
             score = int(compliance["score"])
             print(f"      Score: {score}/100")
             compliance_scores.append(score)
-        except:
-            print(f"      Score: Not available")
+        except (TypeError, ValueError):
+            print("      Score: Not available")
 
         # Track risk levels
         risk_level = risks["risk_level"].lower()
@@ -420,31 +413,31 @@ def main():
             risk_levels[risk_level] += 1
 
     # Summary statistics
-    print(f"\n📊 Legal Analysis Summary:")
+    print("\n📊 Legal Analysis Summary:")
     print("-" * 40)
     print(f"   Documents Processed: {len([r for r in results if 'error' not in r])}")
     print(f"   Processing Errors: {len([r for r in results if 'error' in r])}")
 
-    print(f"\n   ⚠️  Risk Level Distribution:")
+    print("\n   ⚠️  Risk Level Distribution:")
     for level, count in risk_levels.items():
         if count > 0:
             print(f"      {level.title()}: {count} documents")
 
     if compliance_scores:
         avg_compliance = sum(compliance_scores) / len(compliance_scores)
-        print(f"\n   ✅ Compliance Summary:")
+        print("\n   ✅ Compliance Summary:")
         print(f"      Average Compliance Score: {avg_compliance:.1f}/100")
         print(f"      Highest Score: {max(compliance_scores)}/100")
         print(f"      Lowest Score: {min(compliance_scores)}/100")
 
-    print(f"\n🎯 Key Insights:")
+    print("\n🎯 Key Insights:")
     print("   ✅ Automated contract term extraction")
     print("   ✅ Risk assessment and red flag detection")
     print("   ✅ Plain English summaries for stakeholders")
     print("   ✅ Compliance checking against regulations")
     print("   ✅ Batch processing for due diligence")
 
-    print(f"\n🚀 Production Enhancements:")
+    print("\n🚀 Production Enhancements:")
     print("   - Integration with document management systems")
     print("   - Custom risk scoring models by industry")
     print("   - Multi-jurisdiction compliance checking")

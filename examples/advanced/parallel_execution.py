@@ -208,11 +208,38 @@ def get_test_data():
             "Explain reinforcement learning.",
         ],
         "documents": [
-            "Artificial intelligence has revolutionized many industries by automating complex tasks and providing intelligent insights. Machine learning algorithms enable computers to learn from data without explicit programming. Deep learning uses neural networks to process vast amounts of information.",
-            "Cloud computing offers scalable infrastructure and services over the internet. Organizations can reduce costs and improve flexibility by leveraging cloud platforms. Popular cloud providers include AWS, Azure, and Google Cloud Platform.",
-            "Blockchain technology creates immutable, distributed ledgers that enable secure transactions without intermediaries. Cryptocurrencies like Bitcoin utilize blockchain for decentralized finance. Smart contracts automate agreement execution.",
-            "Data science combines statistics, programming, and domain expertise to extract insights from data. Python and R are popular languages for data analysis. Machine learning models help predict future trends and behaviors.",
-            "Cybersecurity protects digital assets from threats and vulnerabilities. Organizations implement multi-layered security strategies including firewalls, encryption, and access controls. Regular security audits help identify potential risks.",
+            (
+                "Artificial intelligence has revolutionized many industries by "
+                "automating complex tasks and providing intelligent insights. "
+                "Machine learning algorithms enable computers to learn from data "
+                "without explicit programming. Deep learning uses neural networks "
+                "to process vast amounts of information."
+            ),
+            (
+                "Cloud computing offers scalable infrastructure and services over "
+                "the internet. Organizations can reduce costs and improve "
+                "flexibility by leveraging cloud platforms. Popular cloud "
+                "providers include AWS, Azure, and Google Cloud Platform."
+            ),
+            (
+                "Blockchain technology creates immutable, distributed ledgers "
+                "that enable secure transactions without intermediaries. "
+                "Cryptocurrencies like Bitcoin utilize blockchain for "
+                "decentralized finance. Smart contracts automate agreement "
+                "execution."
+            ),
+            (
+                "Data science combines statistics, programming, and domain "
+                "expertise to extract insights from data. Python and R are popular "
+                "languages for data analysis. Machine learning models help "
+                "predict future trends and behaviors."
+            ),
+            (
+                "Cybersecurity protects digital assets from threats and "
+                "vulnerabilities. Organizations implement multi-layered security "
+                "strategies including firewalls, encryption, and access controls. "
+                "Regular security audits help identify potential risks."
+            ),
         ],
     }
 
@@ -273,7 +300,7 @@ def main():
     # Get test data
     test_data = get_test_data()
 
-    print(f"\n📋 Testing Parallel Question Answering:")
+    print("\n📋 Testing Parallel Question Answering:")
     print(f"   Questions to process: {len(test_data['questions'])}")
     print("-" * 50)
 
@@ -301,11 +328,13 @@ def main():
             sequential_result["execution_time"] / parallel_result["execution_time"]
         )
         print(
-            f"   Workers: {workers} | Time: {parallel_result['execution_time']:.2f}s | Speedup: {speedup:.2f}x"
+            "   Workers: "
+            f"{workers} | Time: {parallel_result['execution_time']:.2f}s | "
+            f"Speedup: {speedup:.2f}x"
         )
 
     # Test document summarization
-    print(f"\n📄 Testing Parallel Document Summarization:")
+    print("\n📄 Testing Parallel Document Summarization:")
     print(f"   Documents to process: {len(test_data['documents'])}")
     print("-" * 50)
 
@@ -327,7 +356,7 @@ def main():
     )
 
     # Test async processing
-    print(f"\n⚡ Testing Asynchronous Processing:")
+    print("\n⚡ Testing Asynchronous Processing:")
     print("-" * 40)
 
     async def run_async_test():
@@ -346,23 +375,24 @@ def main():
     all_results = qa_results + [async_result]
     metrics = calculate_performance_metrics(all_results)
 
-    print(f"\n📊 Performance Analysis:")
+    print("\n📊 Performance Analysis:")
     print("-" * 40)
 
     if metrics and "error" not in metrics:
         for method, stats in metrics.items():
             print(
-                f"   {method:20s}: {stats['execution_time']:.2f}s (Speedup: {stats['speedup']:.2f}x)"
+                f"   {method:20s}: {stats['execution_time']:.2f}s "
+                f"(Speedup: {stats['speedup']:.2f}x)"
             )
 
-    print(f"\n🎯 Key Insights:")
+    print("\n🎯 Key Insights:")
     print("   ✅ Thread-based parallelism effective for I/O-bound tasks")
     print("   ✅ Async processing good for batching operations")
     print("   ⚠️  Process-based parallelism limited by model serialization")
     print("   ✅ Parallel execution reduces total processing time")
     print("   ⚠️  Overhead exists - not all tasks benefit equally")
 
-    print(f"\n🚀 Production Recommendations:")
+    print("\n🚀 Production Recommendations:")
     print("   - Use ThreadPoolExecutor for DSPy parallel processing")
     print("   - Batch related operations for efficiency")
     print("   - Monitor resource usage and adjust worker count")

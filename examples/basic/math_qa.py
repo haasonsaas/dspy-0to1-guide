@@ -66,7 +66,7 @@ def validate_solution(
 
         # Allow for small floating point differences
         return abs(actual - expected) < 0.01
-    except:
+    except Exception:
         return False
 
 
@@ -100,12 +100,17 @@ def main():
         },
         {"problem": "Solve for x: 2x + 5 = 17", "expected": 6.0, "category": "Algebra"},
         {
-            "problem": "What is the compound interest on $1000 at 5% per year for 2 years?",
+            "problem": (
+                "What is the compound interest on $1000 at 5% per year for 2 " "years?"
+            ),
             "expected": 102.5,  # 1000 * (1.05)^2 - 1000 = 102.5
             "category": "Finance",
         },
         {
-            "problem": "A train travels 240 miles in 3 hours. What is its average speed in mph?",
+            "problem": (
+                "A train travels 240 miles in 3 hours. What is its average speed "
+                "in mph?"
+            ),
             "expected": 80.0,
             "category": "Rate/Speed",
         },
@@ -152,9 +157,10 @@ def main():
             print(f"   💥 Error: {e}")
 
     # Summary
-    print(f"\n📈 Results Summary:")
+    print("\n📈 Results Summary:")
     print(
-        f"   Correct: {correct_answers}/{total_problems} ({correct_answers/total_problems*100:.1f}%)"
+        f"   Correct: {correct_answers}/{total_problems} "
+        f"({correct_answers/total_problems*100:.1f}%)"
     )
 
     if correct_answers == total_problems:

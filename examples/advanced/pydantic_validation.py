@@ -11,7 +11,6 @@ Demonstrates:
 
 import json
 import os
-from datetime import datetime
 from typing import List, Literal, Optional
 
 import dspy
@@ -338,7 +337,7 @@ class StructuredReviewAnalyzer(dspy.Module):
     def forward(self, review_text: str):
         """Analyze review and return structured result."""
         try:
-            result = self.analyzer(review_text=review_text)
+            self.analyzer(review_text=review_text)
             return self._extract_basic_info(
                 review_text
             )  # Use basic extraction for demo
@@ -381,53 +380,59 @@ def get_test_data():
         "contracts": [
             """
             SOFTWARE LICENSE AGREEMENT
-            
-            This agreement is between TechCorp Inc. (Licensor) and Business Solutions Ltd. (Licensee).
-            
+
+            This agreement is between TechCorp Inc. (Licensor) and Business Solutions
+            Ltd. (Licensee).
+
             LICENSE: Non-exclusive software license for internal use only.
             PAYMENT: Annual fee of $50,000 due within 30 days of invoice.
             TERM: 3 years from effective date with automatic renewal.
             TERMINATION: Either party may terminate with 90 days written notice.
             LIABILITY: Licensor's liability limited to amount paid under agreement.
-            
-            Contact: John Smith, CEO, TechCorp Inc., john@techcorp.com, (555) 123-4567
+
+            Contact: John Smith, CEO, TechCorp Inc., john@techcorp.com,
+            (555) 123-4567
             Contact: Sarah Johnson, CTO, Business Solutions Ltd., sarah@bizsol.com
             """,
             """
             CONSULTING SERVICES AGREEMENT
-            
+
             Provider: DataScience Pro LLC
             Client: Manufacturing Corp
-            
+
             SERVICES: Business intelligence and data analytics consulting
             RATE: $200/hour for senior consultants, $150/hour for junior consultants
             PAYMENT: Monthly invoicing, Net 30 terms
             DURATION: 18 months starting January 1, 2024
             TERMINATION: 30 days written notice required
             NON-COMPETE: 12 month restriction on competing services
-            
+
             High liability exposure due to data handling requirements.
             """,
         ],
         "reviews": [
             """
-            I absolutely love this wireless headphone! The sound quality is amazing and the battery 
-            life lasts all day. The noise cancellation works perfectly in busy environments. 
-            The build quality feels premium and they're comfortable for long listening sessions.
-            At $299, they're definitely worth every penny. I've recommended them to all my friends.
+            I absolutely love this wireless headphone! The sound quality is amazing and
+            the battery life lasts all day. The noise cancellation works perfectly in
+            busy environments. The build quality feels premium and they're comfortable
+            for long listening sessions. At $299, they're definitely worth every penny.
+            I've recommended them to all my friends.
             Would definitely buy again!
             """,
             """
-            This smartphone is okay but has some issues. The camera is decent but not as good as 
-            advertised. Battery life is average, gets me through the day but barely. The screen 
-            is nice and bright. Price seems a bit high for what you get - $899 feels like too much.
-            Customer service was helpful when I had questions. It's not bad, just not exceptional.
+            This smartphone is okay but has some issues. The camera is decent but not as
+            good as advertised. Battery life is average, gets me through the day but
+            barely. The screen is nice and bright. Price seems a bit high for what you
+            get - $899 feels like too much.
+            Customer service was helpful when I had questions. It's not bad, just
+            not exceptional.
             """,
             """
-            Terrible experience with this laptop. It's slow, crashes frequently, and gets extremely 
-            hot during basic tasks. The screen quality is poor with washed out colors. Build quality 
-            feels cheap despite the high price tag. Customer support was unhelpful and dismissive.
-            Save your money and buy something else. I regret this purchase completely.
+            Terrible experience with this laptop. It's slow, crashes frequently, and
+            gets extremely hot during basic tasks. The screen quality is poor with
+            washed out colors. Build quality feels cheap despite the high price tag.
+            Customer support was unhelpful and dismissive. Save your money and buy
+            something else. I regret this purchase completely.
             """,
         ],
     }
@@ -487,7 +492,7 @@ def main():
             is_valid = validate_output_structure(result, ContractAnalysisResult)
 
             if is_valid:
-                print(f"   📊 Analysis Results:")
+                print("   📊 Analysis Results:")
                 print(f"      Contract Type: {result.contract_type}")
                 print(f"      Number of Parties: {len(result.parties)}")
                 print(f"      Key Terms Count: {len(result.key_terms)}")
@@ -499,7 +504,7 @@ def main():
                     print(f"      🚨 Red Flags: {', '.join(result.red_flags[:2])}...")
 
                 # Show structured data as JSON
-                print(f"   💾 JSON Output (truncated):")
+                print("   💾 JSON Output (truncated):")
                 json_output = result.model_dump()
                 print(f"      {json.dumps(json_output, indent=2)[:200]}...")
 
@@ -520,13 +525,12 @@ def main():
             is_valid = validate_output_structure(result, ProductReview)
 
             if is_valid:
-                print(f"   📊 Analysis Results:")
+                print("   📊 Analysis Results:")
                 print(f"      Product: {result.product_name}")
                 print(f"      Rating: {result.overall_rating}/5 stars")
                 print(f"      Sentiment: {result.sentiment}")
-                print(
-                    f"      Would Recommend: {'Yes' if result.would_recommend else 'No'}"
-                )
+                recommendation = "Yes" if result.would_recommend else "No"
+                print(f"      Would Recommend: {recommendation}")
                 print(f"      Price Value: {result.price_value}")
                 print(f"      Pros: {len(result.pros)} | Cons: {len(result.cons)}")
 

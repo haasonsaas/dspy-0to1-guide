@@ -9,11 +9,12 @@ Demonstrates:
 - HTTP server for metrics scraping
 """
 
+import json
 import os
-import threading
 import time
 from datetime import datetime
-from typing import Any, Dict, Optional
+from pathlib import Path
+from typing import Optional
 
 import dspy
 from dotenv import load_dotenv
@@ -176,7 +177,7 @@ class InstrumentedModule(dspy.Module):
                     else str(dspy.settings.lm)
                 )
             return "unknown"
-        except:
+        except Exception:
             return "unknown"
 
     def forward(self, *args, **kwargs):
@@ -276,8 +277,14 @@ def run_demo_workload(metrics_collector: DSPyMetricsCollector):
     ]
 
     documents = [
-        "Machine learning is a subset of artificial intelligence that enables computers to learn from data.",
-        "Cloud computing provides on-demand access to computing resources over the internet.",
+        (
+            "Machine learning is a subset of artificial intelligence that enables "
+            "computers to learn from data."
+        ),
+        (
+            "Cloud computing provides on-demand access to computing resources over "
+            "the internet."
+        ),
     ]
 
     texts = [
@@ -372,7 +379,10 @@ def create_grafana_config():
                     "type": "graph",
                     "targets": [
                         {
-                            "expr": "histogram_quantile(0.95, rate(dspy_llm_request_duration_seconds_bucket[5m]))",
+                            "expr": (
+                                "histogram_quantile(0.95, "
+                                "rate(dspy_llm_request_duration_seconds_bucket[5m]))"
+                            ),
                             "legendFormat": "95th percentile",
                         }
                     ],
@@ -416,19 +426,19 @@ def main():
         print(f"❌ Failed to start metrics server: {e}")
         return
 
-    print(f"\n📈 Available Metrics:")
-    print(f"   - dspy_llm_requests_total: Total LLM requests")
-    print(f"   - dspy_llm_request_duration_seconds: Request duration")
-    print(f"   - dspy_llm_tokens_total: Token counts")
-    print(f"   - dspy_active_requests: Active requests")
-    print(f"   - dspy_performance_score: Module performance scores")
-    print(f"   - dspy_system_info: System information")
+    print("\n📈 Available Metrics:")
+    print("   - dspy_llm_requests_total: Total LLM requests")
+    print("   - dspy_llm_request_duration_seconds: Request duration")
+    print("   - dspy_llm_tokens_total: Token counts")
+    print("   - dspy_active_requests: Active requests")
+    print("   - dspy_performance_score: Module performance scores")
+    print("   - dspy_system_info: System information")
 
     try:
         # Run demo workload
         run_demo_workload(metrics_collector)
 
-        print(f"\n🔍 Sample Metrics Output:")
+        print("\n🔍 Sample Metrics Output:")
         print("-" * 40)
 
         # Show sample metrics
@@ -441,19 +451,19 @@ def main():
                 print(f"   {line}")
         print("   ...")
 
-        print(f"\n🌐 Access your metrics:")
+        print("\n🌐 Access your metrics:")
         print(f"   Metrics endpoint: http://localhost:{port}/metrics")
         print(f"   Curl command: curl http://localhost:{port}/metrics")
 
-        print(f"\n🔧 Production Setup:")
+        print("\n🔧 Production Setup:")
         print(f"   1. Configure Prometheus to scrape http://localhost:{port}/metrics")
-        print(f"   2. Set up Grafana dashboards using the metrics")
-        print(f"   3. Create alerts for high error rates or latency")
-        print(f"   4. Use Docker Compose for full monitoring stack")
+        print("   2. Set up Grafana dashboards using the metrics")
+        print("   3. Create alerts for high error rates or latency")
+        print("   4. Use Docker Compose for full monitoring stack")
 
-        print(f"\n⏰ Server will run for 60 seconds...")
+        print("\n⏰ Server will run for 60 seconds...")
         print(f"   Visit http://localhost:{port}/metrics in your browser")
-        print(f"   Press Ctrl+C to stop the server")
+        print("   Press Ctrl+C to stop the server")
 
         # Keep server running
         for i in range(60):
@@ -462,12 +472,12 @@ def main():
                 print(f"   {60-i} seconds remaining...")
 
     except KeyboardInterrupt:
-        print(f"\n⚠️  Server stopped by user")
+        print("\n⚠️  Server stopped by user")
     except Exception as e:
         print(f"\n❌ Error during execution: {e}")
 
-    print(f"\n✅ Prometheus metrics example completed!")
-    print(f"   For production deployment, see docker-compose.yml")
+    print("\n✅ Prometheus metrics example completed!")
+    print("   For production deployment, see docker-compose.yml")
 
 
 if __name__ == "__main__":

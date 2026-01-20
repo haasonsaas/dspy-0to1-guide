@@ -31,7 +31,7 @@ def create_qa_dataset():
         {
             "question": "What is the difference between supervised and unsupervised learning?",
             "answer": "Supervised learning uses labeled training data to learn patterns, while unsupervised learning finds hidden patterns in unlabeled data without specific target outputs.",
-            "category": "AI/ML", 
+            "category": "AI/ML",
             "difficulty": "intermediate"
         },
         {
@@ -65,7 +65,7 @@ def create_qa_dataset():
             "difficulty": "beginner"
         }
     ]
-    
+
     return qa_data
 
 def create_sentiment_dataset():
@@ -78,7 +78,7 @@ def create_sentiment_dataset():
         },
         {
             "text": "This is the worst purchase I've ever made. Complete waste of money and terrible quality.",
-            "sentiment": "negative", 
+            "sentiment": "negative",
             "confidence": 0.98
         },
         {
@@ -112,7 +112,7 @@ def create_sentiment_dataset():
             "confidence": 0.89
         }
     ]
-    
+
     return sentiment_data
 
 def create_math_dataset():
@@ -149,7 +149,7 @@ def create_math_dataset():
             "category": "multiplication"
         }
     ]
-    
+
     return math_data
 
 def create_classification_dataset():
@@ -196,7 +196,7 @@ def create_classification_dataset():
             "subcategory": "food"
         }
     ]
-    
+
     return classification_data
 
 def create_summarization_dataset():
@@ -204,12 +204,12 @@ def create_summarization_dataset():
     summarization_data = [
         {
             "document": """
-            Artificial intelligence (AI) has become increasingly prevalent in modern society, transforming industries 
-            from healthcare to transportation. Machine learning, a subset of AI, enables computers to learn from data 
-            without explicit programming. Deep learning, which uses neural networks with multiple layers, has achieved 
-            remarkable breakthroughs in image recognition, natural language processing, and game playing. Companies 
-            are investing billions of dollars in AI research and development, while governments are creating policies 
-            to regulate its use. Despite the benefits, concerns about job displacement, privacy, and algorithmic bias 
+            Artificial intelligence (AI) has become increasingly prevalent in modern society, transforming industries
+            from healthcare to transportation. Machine learning, a subset of AI, enables computers to learn from data
+            without explicit programming. Deep learning, which uses neural networks with multiple layers, has achieved
+            remarkable breakthroughs in image recognition, natural language processing, and game playing. Companies
+            are investing billions of dollars in AI research and development, while governments are creating policies
+            to regulate its use. Despite the benefits, concerns about job displacement, privacy, and algorithmic bias
             remain significant challenges that society must address.
             """.strip(),
             "summary": "AI and machine learning are transforming industries with significant investment, but concerns about job displacement and bias need addressing.",
@@ -223,13 +223,13 @@ def create_summarization_dataset():
         },
         {
             "document": """
-            Climate change represents one of the most pressing challenges of our time. Global temperatures have risen 
-            by approximately 1.1 degrees Celsius since the late 19th century, primarily due to human activities such 
-            as burning fossil fuels and deforestation. The impacts are already visible: melting ice caps, rising sea 
-            levels, extreme weather events, and disruptions to ecosystems. The Intergovernmental Panel on Climate 
-            Change (IPCC) warns that limiting warming to 1.5°C requires rapid and far-reaching transitions in energy, 
-            land, urban infrastructure, and industrial systems. Solutions include renewable energy adoption, energy 
-            efficiency improvements, carbon pricing, and international cooperation through agreements like the Paris 
+            Climate change represents one of the most pressing challenges of our time. Global temperatures have risen
+            by approximately 1.1 degrees Celsius since the late 19th century, primarily due to human activities such
+            as burning fossil fuels and deforestation. The impacts are already visible: melting ice caps, rising sea
+            levels, extreme weather events, and disruptions to ecosystems. The Intergovernmental Panel on Climate
+            Change (IPCC) warns that limiting warming to 1.5°C requires rapid and far-reaching transitions in energy,
+            land, urban infrastructure, and industrial systems. Solutions include renewable energy adoption, energy
+            efficiency improvements, carbon pricing, and international cooperation through agreements like the Paris
             Climate Accord.
             """.strip(),
             "summary": "Climate change, driven by human activities, requires urgent action including renewable energy adoption and international cooperation to limit global warming.",
@@ -242,13 +242,13 @@ def create_summarization_dataset():
             ]
         }
     ]
-    
+
     return summarization_data
 
 def save_dataset(data: List[Dict], filepath: Path, format: str = "json"):
     """Save dataset in specified format."""
     filepath.parent.mkdir(parents=True, exist_ok=True)
-    
+
     if format == "json":
         with open(filepath, 'w') as f:
             json.dump({
@@ -259,12 +259,12 @@ def save_dataset(data: List[Dict], filepath: Path, format: str = "json"):
                 },
                 "data": data
             }, f, indent=2)
-    
+
     elif format == "jsonl":
         with open(filepath, 'w') as f:
             for item in data:
                 f.write(json.dumps(item) + '\n')
-    
+
     elif format == "csv":
         if data:
             with open(filepath, 'w', newline='') as f:
@@ -275,29 +275,29 @@ def save_dataset(data: List[Dict], filepath: Path, format: str = "json"):
 def create_dspy_examples(data: List[Dict], input_fields: List[str], output_fields: List[str]):
     """Convert dataset to DSPy Example format."""
     dspy_examples = []
-    
+
     for item in data:
         example_data = {}
-        
+
         # Add input fields
         for field in input_fields:
             if field in item:
                 example_data[field] = item[field]
-        
-        # Add output fields  
+
+        # Add output fields
         for field in output_fields:
             if field in item:
                 example_data[field] = item[field]
-        
+
         dspy_examples.append(example_data)
-    
+
     return dspy_examples
 
 def generate_train_test_split(data: List[Dict], train_ratio: float = 0.8):
     """Split data into training and test sets."""
     random.shuffle(data)
     split_idx = int(len(data) * train_ratio)
-    
+
     return {
         "train": data[:split_idx],
         "test": data[split_idx:]
@@ -307,48 +307,48 @@ def main():
     """Create all sample datasets."""
     print("📊 Preparing Sample Datasets for DSPy 0-to-1 Guide")
     print("=" * 60)
-    
+
     datasets_dir = Path("datasets/sample_data")
     datasets_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Create datasets
     datasets = {
         "qa": create_qa_dataset(),
-        "sentiment": create_sentiment_dataset(), 
+        "sentiment": create_sentiment_dataset(),
         "math": create_math_dataset(),
         "classification": create_classification_dataset(),
         "summarization": create_summarization_dataset()
     }
-    
+
     print(f"🏗️  Creating datasets in: {datasets_dir}")
-    
+
     for name, data in datasets.items():
         print(f"\n📁 {name.title()} Dataset ({len(data)} examples)")
-        
+
         # Save in multiple formats
         save_dataset(data, datasets_dir / f"{name}.json", "json")
         save_dataset(data, datasets_dir / f"{name}.jsonl", "jsonl")
-        
+
         # Create train/test splits
         split_data = generate_train_test_split(data)
         save_dataset(split_data["train"], datasets_dir / f"{name}_train.json", "json")
         save_dataset(split_data["test"], datasets_dir / f"{name}_test.json", "json")
-        
+
         print(f"   ✅ Saved {name}.json, {name}.jsonl, train/test splits")
         print(f"      Train: {len(split_data['train'])}, Test: {len(split_data['test'])}")
-    
+
     # Create DSPy-specific examples
     print(f"\n🔧 Creating DSPy Example Files:")
-    
+
     # QA examples
     qa_examples = create_dspy_examples(
-        datasets["qa"], 
+        datasets["qa"],
         input_fields=["question"],
         output_fields=["answer"]
     )
     save_dataset(qa_examples, datasets_dir / "dspy_qa_examples.json", "json")
     print(f"   ✅ DSPy QA examples: {len(qa_examples)}")
-    
+
     # Sentiment examples
     sentiment_examples = create_dspy_examples(
         datasets["sentiment"],
@@ -357,7 +357,7 @@ def main():
     )
     save_dataset(sentiment_examples, datasets_dir / "dspy_sentiment_examples.json", "json")
     print(f"   ✅ DSPy Sentiment examples: {len(sentiment_examples)}")
-    
+
     # Math examples
     math_examples = create_dspy_examples(
         datasets["math"],
@@ -366,10 +366,10 @@ def main():
     )
     save_dataset(math_examples, datasets_dir / "dspy_math_examples.json", "json")
     print(f"   ✅ DSPy Math examples: {len(math_examples)}")
-    
+
     # Create summary statistics
     total_examples = sum(len(data) for data in datasets.values())
-    
+
     summary = {
         "total_datasets": len(datasets),
         "total_examples": total_examples,
@@ -383,20 +383,20 @@ def main():
         "formats_created": ["JSON", "JSONL", "Train/Test splits", "DSPy Examples"],
         "created_at": datetime.now().isoformat()
     }
-    
+
     save_dataset(summary, datasets_dir / "dataset_summary.json", "json")
-    
+
     print(f"\n📈 Dataset Creation Summary:")
     print(f"   Total Datasets: {summary['total_datasets']}")
     print(f"   Total Examples: {summary['total_examples']}")
     print(f"   Formats: {', '.join(summary['formats_created'])}")
     print(f"   Location: {datasets_dir}")
-    
+
     print(f"\n🎯 Usage Examples:")
     print(f"   Load QA dataset: data = json.load(open('{datasets_dir}/qa.json'))['data']")
     print(f"   Load for DSPy: examples = json.load(open('{datasets_dir}/dspy_qa_examples.json'))['data']")
     print(f"   Train/test: train = json.load(open('{datasets_dir}/qa_train.json'))['data']")
-    
+
     print(f"\n✅ Dataset preparation completed!")
 
 if __name__ == "__main__":
